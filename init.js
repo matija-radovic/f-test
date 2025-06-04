@@ -9,7 +9,8 @@ const toAvoid = [...toMerge, '.git', 'node_modules'];
 
 const args = process.argv.slice(2);
 let projectName = 'my-app';
-let githubUrl = 'https://github.com/matija-radovic/f-test/template';
+let githubUrl = 'https://github.com/matija-radovic/f-test';
+let templatePath = undefined;
 let branch = 'main';
 
 for (let i = 0; i < args.length; i++) {
@@ -20,7 +21,14 @@ for (let i = 0; i < args.length; i++) {
     githubUrl = args[++i];
   } else if (arg === '--branch' && args[i + 1]) {
     branch = args[++i];
+  } else if (arg === '--templatePath' && args[i + 1]) {
+    templatePath = path.join(args[++i]);
   }
+}
+
+// Default to folder in default link
+if (githubUrl === 'https://github.com/matija-radovic/f-test' && templatePath === undefined) {
+  templatePath = "template"
 }
 
 const main = async () => {
@@ -57,10 +65,10 @@ const main = async () => {
 
   } catch (error) {
     console.log("Couldn't download the template");
-    console.error(error);
+    console.error(error); return;
   }
 
-  const templateDir = path.join(projectRoot, 'template');
+  const templateDir = path.join(projectRoot, 'template', templatePath);
 
   console.log('\nApplying template...');
   // Overwrite project files and directories
@@ -192,7 +200,7 @@ const mergePackageJson = async (templatePath, projectPath) => {
       if (res.statusCode !== 200) {
         return reject(new Error(`Failed to fetch ${packageName}: Status ${res.statusCode}`));
       }
-      
+
       let data = '';
       res.on('data', (chunk) => data += chunk);
       res.on('end', () => {
@@ -207,10 +215,10 @@ const mergePackageJson = async (templatePath, projectPath) => {
 
   // Process dependencies
   const processDependencies = async (dependencies) => {
-    const result = {...dependencies};
+    const result = { ...dependencies };
     const promises = [];
     const packages = [];
-    
+
     for (const [pkg, version] of Object.entries(result)) {
       if (version === '*') {
         packages.push(pkg);
@@ -227,18 +235,18 @@ const mergePackageJson = async (templatePath, projectPath) => {
   };
 
   console.log("Fetching new dependency version");
-  templatePkg.dependencies = templatePkg.dependencies 
+  templatePkg.dependencies = templatePkg.dependencies
     ? await processDependencies(templatePkg.dependencies)
     : {};
 
   console.log("Fetching new devDependency version");
-  templatePkg.devDependencies = templatePkg.devDependencies 
+  templatePkg.devDependencies = templatePkg.devDependencies
     ? await processDependencies(templatePkg.devDependencies)
     : {};
 
-  projectPkg.scripts = {...(templatePkg.scripts || {}), ...(projectPkg.scripts || {})};
-  projectPkg.dependencies = {...(templatePkg.dependencies || {}), ...(projectPkg.dependencies || {})};
-  projectPkg.devDependencies = {...(templatePkg.devDependencies || {}), ...(projectPkg.devDependencies || {})};
+  projectPkg.scripts = { ...(templatePkg.scripts || {}), ...(projectPkg.scripts || {}) };
+  projectPkg.dependencies = { ...(templatePkg.dependencies || {}), ...(projectPkg.dependencies || {}) };
+  projectPkg.devDependencies = { ...(templatePkg.devDependencies || {}), ...(projectPkg.devDependencies || {}) };
 
   fs.writeFileSync(projectPath, JSON.stringify(projectPkg, null, 2));
 };
