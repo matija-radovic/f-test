@@ -27,7 +27,7 @@ for (let i = 0; i < args.length; i++) {
 }
 
 // Default to folder in default link
-if (githubUrl === 'https://github.com/matija-radovic/f-test' && templatePath === undefined) {
+if (githubUrl === 'https://github.com/matija-radovic/vite-react-ts-template' && templatePath === undefined) {
   templatePath = "template"
 }
 
