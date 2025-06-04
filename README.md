@@ -19,7 +19,7 @@ node $tempFile
 # cleanup
 Remove-Item $tempFile
 ```
-Script has three arguments:
+Script has 4 arguments:
 1. **project name** - requires no flag, default is `"my-app"`
 2. **github** - specifies where should the script look for template repo, default is this repo.
 3. **branch** - specifies what branch should the script look at, default main.
